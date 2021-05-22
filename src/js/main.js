@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { Octree } from 'three/examples/jsm/math/Octree.js';
 import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
@@ -21,6 +22,26 @@ const GRAVITY = 40;
 window.addEventListener( 'load', init );
 window.addEventListener( 'resize', onWindowResize );
 
+function skybox() {
+	const geometry = new THREE.BoxGeometry( 250, 250, 250 );
+	const path = '/textures/skyboxdark';
+	const files = [
+		`${path}/nightsky_ft.png`, //front side
+		`${path}/nightsky_bk.png`, //back side
+		`${path}/nightsky_up.png`, //up side
+		`${path}/nightsky_dn.png`, //down side
+		`${path}/nightsky_rt.png`, //right side
+		`${path}/nightsky_lf.png`, //left side
+	];
+
+	const cubeMaterials = [];
+	for (let i = 0;i<files.length;i++) {
+		cubeMaterials.push(new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load( files[i] ), side: THREE.DoubleSide }));
+	}
+
+	const skybox = new THREE.Mesh( geometry, cubeMaterials );
+	scene.add( skybox );
+}
 
 function init() {
 	console.log('THREE v', THREE.REVISION);
@@ -33,6 +54,7 @@ function init() {
 	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 	addLights();
+	skybox();
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
@@ -52,7 +74,7 @@ function init() {
 	playerVelocity = new THREE.Vector3();
 	playerDirection = new THREE.Vector3();
 
-	loadMesh();
+	loadMesh1();
 
 	/*
 	// controls
@@ -101,10 +123,10 @@ function addLights() {
 
 }
 
-function loadMesh() {
+function loadMesh1() {
 
-	const loader = new GLTFLoader().setPath( './terrain/' );
-	loader.load( 'collision-world.glb', ( gltf ) => {
+	const loader = new GLTFLoader();
+	loader.load( './terrain/collision-world.glb', ( gltf ) => {
 
 		// make this particular navigation mesh more human-scale
 		gltf.scene.traverse( (child) => {
