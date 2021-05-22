@@ -1,3 +1,6 @@
-# node-w7ymfs
+# ThreeXR
 
-[Edit on StackBlitz ⚡️](https://stackblitz.com/edit/node-w7ymfs)
+Sharing work around [threejs](https://threejs.org), [webrx](https://immersive-web.github.io/webxr-samples/) and more.
+
+
+[Edit on StackBlitz ⚡️](https://stackblitz.com/edit/ThreeXR)
