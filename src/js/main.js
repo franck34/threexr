@@ -8,6 +8,8 @@ import { Octree } from 'three/examples/jsm/math/Octree.js';
 import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 import { VRButton } from 'three/examples/jsm/webxr/VRButton.js';
 
+import { Sky } from './threexr/atmosphere/Sky.js';
+
 /*
 	A most basic three.js scene
 */
@@ -22,39 +24,70 @@ const GRAVITY = 40;
 window.addEventListener( 'load', init );
 window.addEventListener( 'resize', onWindowResize );
 
-function skybox() {
-	const geometry = new THREE.BoxGeometry( 250, 250, 250 );
-	const path = '/textures/skyboxdark';
-	const files = [
-		`${path}/nightsky_ft.png`, //front side
-		`${path}/nightsky_bk.png`, //back side
-		`${path}/nightsky_up.png`, //up side
-		`${path}/nightsky_dn.png`, //down side
-		`${path}/nightsky_rt.png`, //right side
-		`${path}/nightsky_lf.png`, //left side
-	];
+function World(config) {
 
-	const cubeMaterials = [];
-	for (let i = 0;i<files.length;i++) {
-		cubeMaterials.push(new THREE.MeshBasicMaterial({ map: new THREE.TextureLoader().load( files[i] ), side: THREE.DoubleSide }));
+	const world = {};
+	world.defaults = {};
+	world.config = config;
+
+	function initStats() {
+		if (config.showFps) {
+			console.log('THREE v', THREE.REVISION);
+			const stats = new Stats();
+			document.body.appendChild(stats.dom);
+		}
 	}
 
-	const skybox = new THREE.Mesh( geometry, cubeMaterials );
-	scene.add( skybox );
+	function initLight() {
+
+		const amblight = new THREE.AmbientLight( 0xa3adff, 0.25 );
+
+		const dirLight = new THREE.DirectionalLight( 0xfeffde, 0.8 );
+		dirLight.position.set( - 5, 25, - 1 );
+		dirLight.castShadow = true;
+		dirLight.shadow.camera.near = 0.01;
+		dirLight.shadow.camera.far = 500;
+		dirLight.shadow.camera.right = 30;
+		dirLight.shadow.camera.left = - 30;
+		dirLight.shadow.camera.top	= 30;
+		dirLight.shadow.camera.bottom = - 30;
+		dirLight.shadow.mapSize.width = 1024;
+		dirLight.shadow.mapSize.height = 1024;
+		dirLight.shadow.radius = 4;
+		dirLight.shadow.bias = - 0.00006;
+
+		return amblight;
+	}
+
+	function init() {
+		const myWorld = world.defaults;
+		myWorld.scene = new THREE.Scene();
+		myWorld.scene.background = new THREE.Color( 0x88ccff );
+		myWorld.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000 );
+		
+		myWorld.sky = new Sky(world);
+		myWorld.scene.add(myWorld.sky);
+
+
+		initStats();
+		initLight();
+	}
+
+	init();
+
+	return world;
 }
 
 function init() {
-	console.log('THREE v', THREE.REVISION);
-	stats = new Stats();
-	document.body.appendChild(stats.dom);
 
-	scene = new THREE.Scene();
-	scene.background = new THREE.Color( 0x88ccff );
+	const config = {
+		showFps:true,
+		theme:'default'
+	}
 
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
+	const world = new World(config);
+	
 	addLights();
-	skybox();
 
 	renderer = new THREE.WebGLRenderer( { antialias: true } );
 	renderer.setPixelRatio( window.devicePixelRatio );
@@ -103,21 +136,6 @@ function init() {
 
 function addLights() {
 
-	const amblight = new THREE.AmbientLight( 0xa3adff, 0.25 );
-
-	const dirLight = new THREE.DirectionalLight( 0xfeffde, 0.8 );
-	dirLight.position.set( - 5, 25, - 1 );
-	dirLight.castShadow = true;
-	dirLight.shadow.camera.near = 0.01;
-	dirLight.shadow.camera.far = 500;
-	dirLight.shadow.camera.right = 30;
-	dirLight.shadow.camera.left = - 30;
-	dirLight.shadow.camera.top	= 30;
-	dirLight.shadow.camera.bottom = - 30;
-	dirLight.shadow.mapSize.width = 1024;
-	dirLight.shadow.mapSize.height = 1024;
-	dirLight.shadow.radius = 4;
-	dirLight.shadow.bias = - 0.00006;
 
 	scene.add( amblight, dirLight );
 
